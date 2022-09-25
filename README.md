@@ -55,10 +55,10 @@ In case you need to catch up with the dbt project we created during demo session
 
 ## Solution
 
-### Adding new `users_address_continents` column to dim_users
+### Adding new `users_address_continents` column to `dim_users`
 
 [To do]
 
-### Adding new `CLV` & `orders` related columns to dim_users
+### Adding new `CLV` & `orders` related columns to `dim_users`
 
 [To do]
