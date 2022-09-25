@@ -12,8 +12,8 @@ Target environment will be Google Cloud Platform's: BigQuery & Data Studio, Vert
 
 ## Storing unused resources
 
-Task: move (cut & paste) all models and singular tests (if present) created during Session 1 excercises to analyses folder. 
-All models stored in analyses forlder will be noticed by, dbt but skipped during the pipeline execution. But stay warned: if your other models still have references to the deprecated models, the pipeline will probably fail. Alternatively - you can delete unwanted models from your project or remove their extensions. Without having the ".sql" / ".yml" extention, the file will be ignored by dbt.
+Task: move (cut & paste) all models and singular tests (if present) created during Session 1 excercises to `analyses` folder. 
+All models stored in `analyses` forlder will be noticed by, dbt but skipped during the pipeline execution. But stay warned: if your other models still have references to the deprecated models, the dbt pipeline will probably fail. Alternatively - you can delete unwanted models from your project or remove their extensions. Without having the ".sql" / ".yml" extention, the file will be ignored by dbt.
 
 ## Business task
 
@@ -48,6 +48,7 @@ Your task is to:
 The task given above, although simplified, represents a real-world scenario for analytics engineer everyday work. That includes familiarizing ourself with the business logic, raw data structure, dbt project shape and internal rules regarding building models for the pipeline we are going to work with. We encourage you to try the excercise on your own but example of how the updated pipeline could look alike (with more detailed instruction how to get there) is provided in the further part of this chapter.
 
 In case you need to catch up with the dbt project we created during demo session - You can find it in this repository: <URL.>
+
 Hint: you can delete / comment / move to analyses the models you've been working with and copy paste the models folder from the sample repository. 
  
 
