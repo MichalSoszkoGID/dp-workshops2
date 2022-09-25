@@ -4,7 +4,6 @@ Welcome to the DataOps CLI Labs workshop repository #2. By the end of this tutor
 - store unused models in dbt
 - configure dbt project and introduce layer structure
 - transform custom SQL querries into data pipeline - best practices
-- preview data with Data Studio
 
 Target environment will be Google Cloud Platform's: BigQuery & Data Studio, Vertex AI Managed Notebook, VSCode as IDE. This tutorial was written with GID DataOps 1.0.9 as a current release.
 
@@ -60,10 +59,6 @@ In case you need to catch up with the dbt project we created during demo session
 
 [To do]
 
-### Adding new CLV & order related columns to dim_users
-
-[To do]
-
-### Sketching results in Data Studio
+### Adding new `CLV` & `orders` related columns to dim_users
 
 [To do]
