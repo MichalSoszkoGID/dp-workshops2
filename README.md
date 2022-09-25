@@ -1,4 +1,4 @@
-## GID DataOps CLI: Creating end-to-end data pipeline
+## GID DataOps CLI: Modifying an end-to-end data pipeline
 
 Welcome to the DataOps CLI Labs workshop repository #2. By the end of this tutorial, you will know how to:
 - store unused models in dbt
@@ -12,67 +12,48 @@ Target environment will be Google Cloud Platform's: BigQuery & Data Studio, Vert
 
 ## Storing unused resources
 
-[To do]
+Task: move (cut & paste) all models and singular tests (if present) created during Session 1 excercises to analyses folder. 
+All models stored in analyses forlder will be noticed by, dbt but skipped during the pipeline execution. But stay warned: if your other models still have references to the deprecated models, the pipeline will probably fail. Alternatively - you can delete unwanted models from your project or remove their extensions. Without having the ".sql" / ".yml" extention, the file will be ignored by dbt.
 
-## Business scenario
+## Business task
 
-Create report on monthly revenue by new and regular users across the world (use continents)
+During the demo session we have created a pipeline ending with `dim_users` model. `Dim_users` is a data mart model, where we store basic information about our customers (with confidential data filtered off) - like his / her `user_id`, `gender`, `age`, `postal code`, `country` etc. This data was taken from the `raw users table` and then enriched with information about his/her web activity in the fictional ecommerce platform (`total events`, date of the `first` and `most recent web activity`, splitted between different traffic sources). Now, our data team has been asked for upgrading the model so it can also present information regarding `customer lifetime value` so the analysts can search for patterns and insights reflecting web activity and purchases made by the customers. Moreover, there has been a request for extending the users localisation data with continents - "a small upgrade but a necessary one". 
+
+### Steps to perform:
+Your task is to:
+1. Inspect a csv: <link to the csv> as a potential mapping table for countries and continents. Be warned! Some country names will require you attention!
+
+    1a. Include the csv in the pipeline.
+    
+    1b. Create corresponding dbt resources (models). At this stage adding the `.yml` configs is optional.
+
+    1c. Include the information about user continent as a column `user_address_continent` in the `dim_users` table.
+
+2. Locate in the DWH a table storing information about user orders. This table should allow you to extract information on order prices.
+
+    2a. Create dbt resources (models). At this stage adding the `.yml` configs is optional.
+    
+    2b. Add created models to the pipeline. `Dim_users` table should be upgraded with the following columns:
+    
+     - `CLV`: a customers lifetime value (here it is a sum of prices for completed orders, filter out orders that are in progress, returned, cancelled or shipped etc.)
+     
+     - `order_cnt`: count of all completed orders placed by the user
+        
+     - `first_order_date`: date of the first order for a given customer (ignore order status)
+        
+     - `most_recent_order_date`: date of the most recent order (ignore order status)
+     
+ 3. Run the pipeline locally and inspect the results
+   
+The task given above, although simplified, represents a real-world scenario for analytics engineer everyday work. That includes familiarizing ourself with the business logic, raw data structure, dbt project shape and internal rules regarding building models for the pipeline we are going to work with. We encourage you to try the excercise on your own but example of how the updated pipeline could look alike (with more detailed instruction how to get there) is provided in the further part of this chapter.
+
+In case you need to catch up with the dbt project we created during demo session - You can find it in this repository: <URL.>
+Hint: you can delete / comment / move to analyses the models you've been working with and copy paste the models folder from the sample repository. 
+ 
 
 ### Write & execute prototype of the query
 
 [To do: instructions, business logic etc. (create seed)]
-
-````
-with users_mapped as (
-  select 
-    u.id          as user_id,
-    case 
-      when u.country = 'Brasil' then 'Brazil'
-      when u.country = 'United States' then 'US'
-      when u.country = 'South Korea' then 'Korea, South'
-      when u.country = 'España' then 'Spain'
-      when u.country = 'Deutschland' then 'Germany'
-      else u.country
-    end           as user_country,
-    c.Continent   as user_continent
-  from `dataops-demo-342817.msoszko_US_private_working_schema.base_users` as u
-  left join `dataops-demo-342817.msoszko_US_private_working_schema.seed_countries_continents` as c on
-    case 
-      when u.country = 'Brasil' then 'Brazil'
-      when u.country = 'United States' then 'US'
-      when u.country = 'South Korea' then 'Korea, South'
-      when u.country = 'España' then 'Spain'
-      when u.country = 'Deutschland' then 'Germany'
-      else u.country
-    end = c.Country
-),
-stg_order_items as (
-  select 
-    cast(date_trunc(created_at, month) as date)            as order_created_at,
-    sum(o.sale_price)                                      as order_price,
-    u.user_id,
-    u.user_continent
-  from `dataops-demo-342817.msoszko_US_private_working_schema.base_order_items` as o
-  left join users_mapped as u on
-  o.user_id = u.user_id
-  where
-    status = 'Complete'
-  group by
-    order_created_at, user_id, user_continent
-),
-stg_order_items_aggm as (
-select 
-  order_created_at,
-  user_continent,
-  count(distinct user_id) as users_count,
-  sum(order_price)        as order_price
-from stg_order_items 
-group by order_created_at, user_continent
-order by order_created_at, user_continent
-)
-select * from stg_order_items_aggm 
-order by order_created_at, user_continent
-````
 
 ### Create & launch data pipeline
 
