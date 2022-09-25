@@ -55,6 +55,8 @@ In case you need to catch up with the dbt project we created during demo session
 
 ## Solution
 
+Note: The solution proposed here does not stand as an one-and-only true way for building dbt pipelines. In fact, for such small number of tables and transformations the 3 - 4 level layer structure appears as an overkill. However, tight and precise naming convention with carefuly considered strategy for layering will become of most importance for larger projects - where the strength of dbt (and the Modern Data Platform) is greatly revealed.
+
 ### Adding new `users_address_continents` column to `dim_users` 
 
 >-> Hint: After each step you can double-check if pipeline works by performing control `dbt run` execution.
@@ -66,7 +68,7 @@ In case you need to catch up with the dbt project we created during demo session
 
 ![image](https://user-images.githubusercontent.com/97670480/192153291-83f3a4b3-6d59-4f6b-a478-bf701ed0f23c.png)
 
-*Step 2.** Load seed from you command line (VSCode terminal) with the command:
+**Step 2.** Load seed from your command line (VSCode terminal) with the command:
 
 ```
 dbt seed
@@ -74,7 +76,7 @@ dbt seed
 
 ![image](https://user-images.githubusercontent.com/97670480/192153470-fe021884-8d02-45b9-bf82-4633e345add6.png)
 
-**Step 3.** The seed file contains ISO-like country names and correspoinding continents. It can serve as a mapping table for our `user_address_country` column stored in `stg_ecommerce__users.sql` model. However, some country names in `users` table do no fit the counry names stored in csv file. Secondly, we will be perfoming JOIN statement on a `stg_` type of model. Thus it is (according to dbt best practices) recommended to include `base_` type of model before join is executed. In order to do that - create new `base_ecommerce__users.sql` model inside of `staging/ecommerce` layer:
+**Step 3.** The seed file contains ISO-like country names and correspoinding continents. It can serve as a mapping table for our `user_address_country` column stored in `stg_ecommerce__users.sql` model. However, some country names in `users` table do no fit the counry names stored in csv file. Secondly, we will be perfoming JOIN statement on a `stg_` type of model. Thus it is (according to dbt best practices) recommended to include `base_` type of model before join is executed. In order to do that - create new `base_ecommerce__users.sql` model inside of `models/staging/ecommerce` layer:
 
 ```
 {{
@@ -309,5 +311,102 @@ renamed as (
 
 select * from renamed
 ```
+
+**Step 3.** Create an intermediate model in `models/intermediate/marketing` folder where you perform transformations, calculating the `CLV`, `order_cnt`, `first_order_date` and `most_recent_order_date`, aggregated results by user. Name the model as `int_order_items_sale_pivoted.sql`:
+
+```
+{{
+    config(
+      materialized='table',
+      persist_docs={"relation":true, "columns": true}
+    )
+}}
+
+with order_items as (
+    select * from {{ ref('stg_ecommerce__order_items')}}
+),
+pivot_order_items_agg_by_user as (
+    
+    select 
+        
+        user_id,
+        sum(case when order_item_status = 'Complete' then order_item_sale_price else 0 end)     as CLV,
+        count(distinct order_id)                                                                as order_cnt,
+        min(order_item_created_at)                                                              as first_order_date,
+        max(order_item_created_at)                                                              as most_recent_order_date
+
+    from order_items
+    group by user_id
+)
+
+select * from pivot_order_items_agg_by_user
+```
+
+**Step 4.** Join the recently created intermediate model - `int_order_items_sale_pivoted.sql` to `dim_users` and attach new calculated fields. For that, edit the `dim_users.sql` in `models/mart/marketing` and save as:
+
+```
+{{
+    config(
+      materialized='table',
+      persist_docs={"relation":true, "columns": true}
+    )
+}}
+
+with users as (
+    select * from {{ ref('stg_ecommerce__users') }}
+),
+events as (
+    select * from {{ ref('int_events_traffic_sources_pivoted')}}
+),
+orders as (
+    select * from {{ ref('int_order_items_sale_pivoted')}}
+),
+users_events_orders_joined as (
+
+    select 
+
+        u.user_id,
+        u.user_age,
+        u.user_gender,
+        u.user_email_domain,
+        u.user_address_postal_code,
+        u.user_address_city,
+        u.user_address_country,
+        u.user_address_continent,
+        e.total_traffic,
+        e.first_event,
+        e.most_recent_event,
+        e.adwords_traffic,
+        e.email_traffic,
+        e.facebook_traffic,
+        e.organic_traffic,
+        e.youtube_traffic,
+        o.CLV,
+        o.order_cnt,
+        o.first_order_date,
+        o.most_recent_order_date
+
+    from users as u
+    left join events as e
+    on u.user_id = e.user_id
+    left join orders as o
+    on u.user_id = o.user_id
+)
+
+select * from users_events_orders_joined
+```
+
+**Step 5.** Inspect the DAG (lineage graph) using dbt docs function (we use a `DP` command here):
+```
+dp docs-serve
+```
+and clicking on the DBT-Docs icon (Notebook Launcher).
+>-> Hint: If you previously run the DBT-Docs, make sure to cancel prevously triggered `dp docs-serve` command by pressing CTRL+C (in terminal):
+
+![image](https://user-images.githubusercontent.com/97670480/192161606-ec22bd17-606e-4276-b3db-fc63939e32e2.png)
+
+The DAG should now look like this:
+
+![image](https://user-images.githubusercontent.com/97670480/192161501-fee57698-5edf-4824-897a-8c39abc3fea3.png)
 
 
