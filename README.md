@@ -113,7 +113,7 @@ users as (
 select * from users
 ```
 
-**Step 4.** Modify the existing `stg_ecommerce__events.sql` model by adding JOIN statement and formatting country names, so the JOIN will not return any null values. Note that we were asked to filter out sensitive data - in staging layer there will be no user name and their detailed addresses columns:
+**Step 4.** Modify the existing `stg_ecommerce__events.sql` model by adding JOIN statement and formatting country names, so the JOIN will not return any null values. Note that we were asked to filter out sensitive data - in staging layer there will be no user name and detailed address columns:
 
 ```
 {{
@@ -207,7 +207,7 @@ models:
         description: ""
 ```
 
-**Step.5** Attach the `user_address_continent` in dim_users is performed by simply adding line of code in the final CTE:
+**Step.5** Attach the `user_address_continent` in `dim_users` by adding line of code in the final CTE:
 
 ```
 {{
@@ -259,6 +259,55 @@ and clicking on the DBT-Docs icon (Notebook Launcher). The DAG should now look l
 
 ![image](https://user-images.githubusercontent.com/97670480/192155662-9b1b13e1-70f3-4846-8e32-a9a39bf9fa9b.png)
 
-### Adding new `CLV` & `orders` related columns to `dim_users`
+### Adding `CLV` & `orders` related columns to `dim_users`
 
-[To do]
+**Step 1.** Inspect `raw_ecommerce_eu` tables and focus on `order_items`. This table stores information such as `order_id`, `user_id`, `sale_price` etc.. The granularity is 1 product ordered = 1 row. Create source yaml file for the raw data: `source_ecommerce__order_items.yml` and store it in `models/staging/ecommerce` folder:
+
+```
+version: 2
+
+sources:
+- name: raw_ecommerce_eu
+  tables:
+  - name: order_items
+```
+
+**Step 2.** Proceed with staging model referencing recently defined source for `order_items` raw table. For that, create `stg_ecommerce__order_items.sql` file and apply a chosen column naming convention. Put the model into `models/staging/ecommerce` folder:
+
+```
+{{
+    config(
+      materialized='table',
+      persist_docs={"relation":true, "columns": true}
+    )
+}}
+
+with source as (
+
+    select * from {{ source('raw_ecommerce_eu', 'order_items') }}
+
+),
+
+renamed as (
+
+    select
+        id                  as order_item_id,
+        order_id,
+        user_id,
+        product_id,
+        inventory_item_id,
+        status              as order_item_status,
+        created_at          as order_item_created_at,
+        shipped_at          as order_item_shipped_at,
+        delivered_at        as order_item_delivered_at,
+        returned_at         as order_item_returned_at,
+        sale_price          as order_item_sale_price
+
+    from source
+
+)
+
+select * from renamed
+```
+
+
