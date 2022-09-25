@@ -43,23 +43,27 @@ Your task is to:
         
      - `most_recent_order_date`: date of the most recent order (ignore order status)
      
- 3. Run the pipeline locally and inspect the results
+3. Inspect the pipeline and execute it locally.
+
+4. Preview the results in BI tools
    
-The task given above, although simplified, represents a real-world scenario for analytics engineer everyday work. That includes familiarizing ourself with the business logic, raw data structure, dbt project shape and internal rules regarding building models for the pipeline we are going to work with. We encourage you to try the excercise on your own but example of how the updated pipeline could look alike (with more detailed instruction how to get there) is provided in the further part of this chapter.
+The task given above, although simplified, represents a real-world scenario for analytics engineer everyday work. That includes familiarizing ourself with the business logic, raw data structure, dbt project shape and internal rules regarding building models for the pipeline we are going to work with. We encourage you to try the excercise on your own but example of how the updated pipeline could look alike (with more detailed instruction how to get there) is provided underneath.
 
 In case you need to catch up with the dbt project we created during demo session - You can find it in this repository: [dbt project - Session 2](https://gitlab.com/datamass-mdp-workshop/msoszko-datamass-project/-/tree/session-2-updated)
 
 >-> Tip: you can delete / comment / move to `analyses` all models you've been working with and copy paste the models folder from the sample repository. 
  
 
-### Write & execute prototype of the query
+## Solution
 
-[To do: instructions, business logic etc. (create seed)]
+### Adding new `users_address_continents` column to dim_users
 
-### Create & launch data pipeline
+[To do]
 
-[To do: instructions, add sample structure, show example of lineage graph (how could it look alike)
+### Adding new CLV & order related columns to dim_users
 
-### Preview results in Data Studio
+[To do]
 
-[To do: instructions: navigate to bigquery, choose table, enter Data Studio, decide on visualization type (graph vs table) create simple sketch
+### Sketching results in Data Studio
+
+[To do]
