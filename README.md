@@ -62,12 +62,14 @@ Note: The solution proposed here does not stand as an one-and-only true way for 
 >-> Hint: After each step you can double-check if pipeline works by performing control `dbt run` execution.
 >-> Hint2: Or if you don't want to run the whole pipeline but the model you have just created - `dbt run --select name_of_model`
 
+---
 **Step 1.** Locate csv file: [ISO_like_Countries-Continents.csv](https://gitlab.com/datamass-mdp-workshop/workshop-resources/-/blob/main/CSVs/ISO_like_Countries-Continents.csv) and upload it to `seeds` folder inside of you dbt project.
 
 >-> Hint: you can download the file into your local drive and then drag-drop it into VSCode
 
 ![image](https://user-images.githubusercontent.com/97670480/192153291-83f3a4b3-6d59-4f6b-a478-bf701ed0f23c.png)
 
+---
 **Step 2.** Load seed from your command line (VSCode terminal) with the command:
 
 ```
@@ -76,6 +78,7 @@ dbt seed
 
 ![image](https://user-images.githubusercontent.com/97670480/192153470-fe021884-8d02-45b9-bf82-4633e345add6.png)
 
+---
 **Step 3.** The seed file contains ISO-like country names and correspoinding continents. It can serve as a mapping table for our `user_address_country` column stored in `stg_ecommerce__users.sql` model. However, some country names in `users` table do no fit the counry names stored in csv file. Secondly, we will be perfoming JOIN statement on a `stg_` type of model. Thus it is (according to dbt best practices) recommended to include `base_` type of model before join is executed. In order to do that - create new `base_ecommerce__users.sql` model inside of `models/staging/ecommerce` layer:
 
 ```
@@ -114,7 +117,7 @@ users as (
 
 select * from users
 ```
-
+---
 **Step 4.** Modify the existing `stg_ecommerce__events.sql` model by adding JOIN statement and formatting country names, so the JOIN will not return any null values. Note that we were asked to filter out sensitive data - in staging layer there will be no user name and detailed address columns:
 
 ```
@@ -208,7 +211,7 @@ models:
       - name: user_account_created_at
         description: ""
 ```
-
+---
 **Step.5** Attach the `user_address_continent` in `dim_users` by adding line of code in the final CTE:
 
 ```
@@ -253,6 +256,7 @@ users_and_events as (
 
 select * from users_and_events
 ```
+---
 **Step 6.** Inspect the DAG (lineage graph) using dbt docs function (we use a `DP` command here):
 ```
 dp docs-serve
@@ -261,6 +265,7 @@ and clicking on the DBT-Docs icon (Notebook Launcher). The DAG should now look l
 
 ![image](https://user-images.githubusercontent.com/97670480/192155662-9b1b13e1-70f3-4846-8e32-a9a39bf9fa9b.png)
 
+---
 ### Adding `CLV` & `orders` related columns to `dim_users`
 
 **Step 1.** Inspect `raw_ecommerce_eu` tables and focus on `order_items`. This table stores information such as `order_id`, `user_id`, `sale_price` etc.. The granularity is 1 product ordered = 1 row. Create source yaml file for the raw data: `source_ecommerce__order_items.yml` and store it in `models/staging/ecommerce` folder:
@@ -273,7 +278,7 @@ sources:
   tables:
   - name: order_items
 ```
-
+---
 **Step 2.** Proceed with staging model referencing recently defined source for `order_items` raw table. For that, create `stg_ecommerce__order_items.sql` file and apply a chosen column naming convention. Put the model into `models/staging/ecommerce` folder:
 
 ```
@@ -311,7 +316,7 @@ renamed as (
 
 select * from renamed
 ```
-
+---
 **Step 3.** Create an intermediate model in `models/intermediate/marketing` folder where you perform transformations, calculating the `CLV`, `order_cnt`, `first_order_date` and `most_recent_order_date`, aggregated results by user. Name the model as `int_order_items_sale_pivoted.sql`:
 
 ```
@@ -341,7 +346,7 @@ pivot_order_items_agg_by_user as (
 
 select * from pivot_order_items_agg_by_user
 ```
-
+---
 **Step 4.** Join the recently created intermediate model - `int_order_items_sale_pivoted.sql` to `dim_users` and attach new calculated fields. For that, edit the `dim_users.sql` in `models/mart/marketing` and save as:
 
 ```
@@ -395,7 +400,7 @@ users_events_orders_joined as (
 
 select * from users_events_orders_joined
 ```
-
+---
 **Step 5.** Inspect the DAG (lineage graph) using dbt docs function (we use a `DP` command here):
 ```
 dp docs-serve
@@ -403,10 +408,10 @@ dp docs-serve
 and clicking on the DBT-Docs icon (Notebook Launcher).
 >-> Hint: If you previously run the DBT-Docs, make sure to cancel prevously triggered `dp docs-serve` command by pressing CTRL+C (in terminal):
 
-![image](https://user-images.githubusercontent.com/97670480/192161606-ec22bd17-606e-4276-b3db-fc63939e32e2.png)
+![image](https://user-images.githubusercontent.com/97670480/192161836-14e11516-3c29-4f28-b8b3-a7df4a1b74f8.png)
 
 The DAG should now look like this:
 
 ![image](https://user-images.githubusercontent.com/97670480/192161501-fee57698-5edf-4824-897a-8c39abc3fea3.png)
 
-
+This concludes the excercises.
