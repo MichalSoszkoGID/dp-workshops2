@@ -50,7 +50,7 @@ The task given above, although simplified, represents a real-world scenario for 
 
 In case you need to catch up with the dbt project we created during demo session - You can find it in this repository: [dbt project - Session 2](https://gitlab.com/datamass-mdp-workshop/msoszko-datamass-project/-/tree/session-2-updated)
 
->-> Tip: you can delete / comment / move to `analyses` all models you've been working with and copy paste the models folder from the sample repository. 
+>-> Tip: Before you start you can delete / comment / move to `analyses` all models you've been working with and copy paste the models folder from the sample repository. 
  
 
 ## Solution
